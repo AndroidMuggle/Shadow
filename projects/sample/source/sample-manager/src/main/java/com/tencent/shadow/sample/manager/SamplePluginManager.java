@@ -29,6 +29,7 @@ import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.tencent.shadow.core.common.InstalledApk;
 import com.tencent.shadow.core.manager.installplugin.InstalledPlugin;
 import com.tencent.shadow.dynamic.host.EnterCallback;
 import com.tencent.shadow.sample.constant.Constant;
@@ -83,6 +84,8 @@ public class SamplePluginManager extends FastPluginManager {
             close();
         } else if (fromId == Constant.FROM_ID_LOAD_VIEW_TO_HOST) {
             loadViewToHost(context, bundle);
+        } else if (fromId == Constant.FROM_ID_REFLECTION_PLUGIN) {
+            testReflection(context, bundle, callback);
         } else {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
         }
@@ -138,6 +141,45 @@ public class SamplePluginManager extends FastPluginManager {
                     Intent intent = mPluginLoader.convertActivityIntent(pluginIntent);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mPluginLoader.startActivityInPluginProcess(intent);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                if (callback != null) {
+                    callback.onCloseLoadingView();
+                }
+            }
+        });
+    }
+
+    private void testReflection(final Context context, Bundle bundle, final EnterCallback callback) {
+        final String pluginZipPath = bundle.getString(Constant.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(Constant.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(Constant.KEY_ACTIVITY_CLASSNAME);
+        if (className == null) {
+            throw new NullPointerException("className == null");
+        }
+        final Bundle extras = bundle.getBundle(Constant.KEY_EXTRAS);
+
+        if (callback != null) {
+            final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
+            callback.onShowLoadingView(view);
+        }
+
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    InstalledPlugin installedPlugin = installPlugin(pluginZipPath, null, true);
+
+                    loadPlugin(installedPlugin.UUID, PART_KEY_PLUGIN_BASE);
+                    loadPlugin(installedPlugin.UUID, PART_KEY_PLUGIN_MAIN_APP);
+                    callApplicationOnCreate(PART_KEY_PLUGIN_BASE);
+                    callApplicationOnCreate(PART_KEY_PLUGIN_MAIN_APP);
+                    InstalledApk installedApk = getPlugin(installedPlugin.UUID, PART_KEY_PLUGIN_MAIN_APP);
+                    if (null != callback) {
+                        callback.onEnterReturn(installedApk);
+                    }
+
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

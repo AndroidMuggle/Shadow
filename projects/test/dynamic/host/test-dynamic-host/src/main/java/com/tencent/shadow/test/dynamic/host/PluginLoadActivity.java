@@ -79,6 +79,11 @@ public class PluginLoadActivity extends Activity {
                             public void onEnterComplete() {
 
                             }
+
+                            @Override
+                            public void onEnterReturn(Object o) {
+
+                            }
                         });
             }
         });

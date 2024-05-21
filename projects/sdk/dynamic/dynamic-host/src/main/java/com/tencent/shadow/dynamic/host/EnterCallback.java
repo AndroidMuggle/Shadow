@@ -20,6 +20,8 @@ package com.tencent.shadow.dynamic.host;
 
 import android.view.View;
 
+import java.lang.reflect.InvocationTargetException;
+
 public interface EnterCallback {
 
     void onShowLoadingView(View view);
@@ -27,4 +29,6 @@ public interface EnterCallback {
     void onCloseLoadingView();
 
     void onEnterComplete();
+
+    void onEnterReturn(Object o) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException;
 }

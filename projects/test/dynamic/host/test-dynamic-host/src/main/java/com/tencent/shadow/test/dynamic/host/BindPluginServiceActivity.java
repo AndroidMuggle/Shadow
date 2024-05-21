@@ -67,6 +67,11 @@ public class BindPluginServiceActivity extends Activity {
                     public void onEnterComplete() {
 
                     }
+
+                    @Override
+                    public void onEnterReturn(Object o) {
+
+                    }
                 });
 
     }

@@ -130,6 +130,11 @@ public class JumpToPluginActivity extends Activity {
                     public void onEnterComplete() {
 
                     }
+
+                    @Override
+                    public void onEnterReturn(Object o) {
+
+                    }
                 });
 
     }
